@@ -454,7 +454,7 @@ Below is a link to the simulation video on YouTube.
 <a href="" target="_blank">
   <img
     src="https://i.ytimg.com/vi/myvideolink/maxresdefault.jpg"
-    alt="Assembly Programming Language Tutorial"
+    alt="3D simulation of an RRR manipulator written in C++"
     style="max-width: 100%; border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.18); margin-top: 0.5rem;"
   />
 </a>
