@@ -20,7 +20,7 @@
 
 </div>
 
-<hr />
+---
 
 <!-- ========================================================= -->
 <!-- Table of Contents                                        -->
@@ -33,6 +33,7 @@
   <li> <a href="#building-the-project">Building the project</a></li>
   <li> <a href="#running-the-simulator">Running the simulator</a></li>
   <li> <a href="#repository-file-guide">Repository file guide (full explanation)</a></li>
+  <li> <a href="#simulation-video">Simulation video</a></li>
   <li> <a href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 
@@ -92,6 +93,10 @@ Manipulator3D/
 
 ## Robotics: kinematics, dynamics, and inverse kinematics
 
+> Note on README math rendering (GitHub):
+> This README uses GitHub-supported math blocks via fenced ```math code blocks and inline `$...$`.
+> If your viewer does not support math, the equations will appear as plain text.
+
 ### 1) Coordinate frames and joint conventions
 
 - World frame origin is at the center of the base revolute joint: **(0,0,0)**.
@@ -102,7 +107,7 @@ Manipulator3D/
 
 We use the radial unit direction in the X–Y plane:
 
-\[
+```math
 \mathbf{u} =
 \begin{bmatrix}
 \cos(q_0)\\
@@ -116,35 +121,38 @@ We use the radial unit direction in the X–Y plane:
 0\\
 1
 \end{bmatrix}.
-\]
+```
 
 ### 2) Forward kinematics (FK)
 
-Let link lengths be \(L_1\) and \(L_2\). Then:
+Let link lengths be $L_1$ and $L_2$. Then:
 
 - Elbow position:
-\[
+
+```math
 \mathbf{p}_1 = L_1\cos(q_1)\,\mathbf{u} + L_1\sin(q_1)\,\mathbf{k}
-\]
+```
 
 - End-effector position:
-\[
+
+```math
 \mathbf{p}_{ee} = \mathbf{p}_1 + L_2\cos(q_1+q_2)\,\mathbf{u} + L_2\sin(q_1+q_2)\,\mathbf{k}
-\]
+```
 
 This is implemented in:
-- <code>robot::RobotArm::ForwardKinematics()</code>
+- `robot::RobotArm::ForwardKinematics()`
 
 ### 3) Workspace (reachability) check
 
 This manipulator is effectively a 2-link arm in a vertical plane, rotated by yaw. Therefore the reachable radius must satisfy:
 
-\[
+```math
 r_{\min} = |L_1 - L_2|,\quad r_{\max} = L_1 + L_2
-\]
-\[
+```
+
+```math
 \|\mathbf{p}\| \in [r_{\min}, r_{\max}]
-\]
+```
 
 The implementation enforces:
 - `target.z >= 0`
@@ -152,41 +160,52 @@ The implementation enforces:
 
 ### 4) Analytic inverse kinematics (IK): how it works here
 
-Given target \(\mathbf{p} = (x,y,z)\):
+Given target $\mathbf{p} = (x,y,z)$:
 
 **Step A — base yaw**
-\[
-q_0 = \mathrm{atan2}(y, x)
-\]
 
-**Step B — reduce to planar IK in \((r,z)\)**
-\[
+```math
+q_0 = \mathrm{atan2}(y, x)
+```
+
+**Step B — reduce to planar IK in $(r,z)$**
+
+```math
 r = \sqrt{x^2 + y^2}
-\]
-Now solve a 2-link planar problem for the triangle formed by \(L_1\), \(L_2\), and \(\sqrt{r^2+z^2}\).
+```
+
+Now solve a 2-link planar problem for the triangle formed by $L_1$, $L_2$, and $\sqrt{r^2+z^2}$.
 
 **Step C — elbow angle from law of cosines**
-\[
+
+```math
 \cos(q_2) = \frac{r^2 + z^2 - L_1^2 - L_2^2}{2L_1L_2}
-\]
-Clamp to \([-1,1]\) for numerical safety, then:
-\[
+```
+
+Clamp to $[-1,1]$ for numerical safety, then:
+
+```math
 q_2 = \pm \arccos(\cos(q_2))
-\]
+```
+
 This sign is the **elbow-up / elbow-down** branch selection.
 
 **Step D — shoulder angle**
+
 Define:
-\[
+
+```math
 k_1 = L_1 + L_2\cos(q_2),\quad k_2 = L_2\sin(q_2)
-\]
+```
+
 Then:
-\[
+
+```math
 q_1 = \mathrm{atan2}(z, r) - \mathrm{atan2}(k_2, k_1)
-\]
+```
 
 This is implemented in:
-- <code>robot::RobotArm::SolveIK()</code>
+- `robot::RobotArm::SolveIK()`
 
 **Practical note (this repo):**
 - The main program uses the default elbow branch (elbow-down) by passing `elbowUp = false`.
@@ -202,16 +221,19 @@ This repository is primarily a **kinematic + trajectory** simulator:
 However, the code also defines **mass and inertia properties** for each link (uniform rod approximations):
 
 - About center of mass:
-\[
+
+```math
 I_{cm} = \frac{1}{12} mL^2
-\]
+```
+
 - About the joint at one end:
-\[
+
+```math
 I_{joint} = \frac{1}{3} mL^2
-\]
+```
 
 These are computed in:
-- <code>robot::LinkParams::RecomputeInertia()</code>
+- `robot::LinkParams::RecomputeInertia()`
 
 Currently, those values are used for **display/inspection** (overlay panel) and as a foundation for extending the project to:
 - forward dynamics (torques → accelerations),
@@ -234,11 +256,12 @@ Currently, those values are used for **display/inspection** (overlay panel) and 
 
 This project supports out-of-source builds:
 
-<pre><code>mkdir -p build
+```bash
+mkdir -p build
 cd build
 cmake ..
 cmake --build . --config Release
-</code></pre>
+```
 
 ---
 
@@ -250,8 +273,9 @@ cmake --build . --config Release
 
 From the `build/` directory:
 
-<pre><code>./Release/Manipulator3D.exe
-</code></pre>
+```bash
+./Release/Manipulator3D.exe
+```
 
 **Notes (important across platforms/generators):**
 - The `./Release/Manipulator3D.exe` path is typical for **multi-config generators** (e.g., Visual Studio).
@@ -275,23 +299,23 @@ From the `build/` directory:
 
 This section explains every important file in the repository and its role.
 
-### <code>CMakeLists.txt</code>
+### `CMakeLists.txt`
 
 Key responsibilities:
 
 - sets C++17 standard
 - fetches and builds **raylib 5.0** using CMake FetchContent
-- builds the executable <code>Manipulator3D</code> from:
-  - <code>src/main.cpp</code>
-  - <code>src/robot/RobotArm.cpp</code>
-  - <code>src/sim/Trajectory.cpp</code>
-  - <code>src/ui/Overlay.cpp</code>
-  - <code>src/render/DrawUtils.cpp</code>
-- links raylib and includes <code>src/</code> as an include directory
+- builds the executable `Manipulator3D` from:
+  - `src/main.cpp`
+  - `src/robot/RobotArm.cpp`
+  - `src/sim/Trajectory.cpp`
+  - `src/ui/Overlay.cpp`
+  - `src/render/DrawUtils.cpp`
+- links raylib and includes `src/` as an include directory
 
 ---
 
-### <code>src/main.cpp</code>
+### `src/main.cpp`
 
 This is the “application” entry point and runtime loop:
 
@@ -311,30 +335,30 @@ This is the “application” entry point and runtime loop:
 
 ---
 
-### <code>src/robot/RobotArm.h</code>
+### `src/robot/RobotArm.h`
 
 Declares the robot model and kinematics API:
 
-- <code>LinkParams</code>: link length, mass, inertia approximations (rod model)
-- <code>JointAngles</code>: the 3 joint variables (yaw + 2 pitches)
-- <code>FKResult</code>: base/joints/EE positions for rendering
-- <code>IKResult</code>: reachability + solution angles + message
-- <code>RobotArm</code> class:
-  - <code>SolveIK()</code>
-  - <code>ForwardKinematics()</code>
-  - reach limits: <code>MinReach()</code>, <code>MaxReach()</code>
+- `LinkParams`: link length, mass, inertia approximations (rod model)
+- `JointAngles`: the 3 joint variables (yaw + 2 pitches)
+- `FKResult`: base/joints/EE positions for rendering
+- `IKResult`: reachability + solution angles + message
+- `RobotArm` class:
+  - `SolveIK()`
+  - `ForwardKinematics()`
+  - reach limits: `MinReach()`, `MaxReach()`
 
 ---
 
-### <code>src/robot/RobotArm.cpp</code>
+### `src/robot/RobotArm.cpp`
 
 Implements analytic FK and IK:
 
 - **IK**:
-  - rejects invalid targets (z &lt; 0)
+  - rejects invalid targets (z < 0)
   - checks radius bounds (min/max reach)
-  - computes yaw from <code>atan2(y,x)</code>
-  - reduces to planar IK in <code>(r,z)</code>
+  - computes yaw from `atan2(y,x)`
+  - reduces to planar IK in `(r,z)`
   - solves elbow angle via law of cosines
   - solves shoulder angle via triangle decomposition
 - **FK**:
@@ -343,44 +367,44 @@ Implements analytic FK and IK:
 
 ---
 
-### <code>src/sim/Trajectory.h</code>
+### `src/sim/Trajectory.h`
 
 Declares a minimal trajectory generator:
 
-- <code>sim::LinearTrajectory</code>:
-  - <code>Reset(from,to,duration)</code>
-  - <code>Update(dt)</code>
-  - <code>Position()</code>
-  - <code>Finished()</code>
+- `sim::LinearTrajectory`:
+  - `Reset(from,to,duration)`
+  - `Update(dt)`
+  - `Position()`
+  - `Finished()`
 
 ---
 
-### <code>src/sim/Trajectory.cpp</code>
+### `src/sim/Trajectory.cpp`
 
 Implements linear interpolation in 3D:
 
 - uses a normalized time parameter:
-  - \(\alpha = \mathrm{clamp}(t/T, 0, 1)\)
+  - $\alpha = \mathrm{clamp}(t/T, 0, 1)$
 - outputs:
-  - \(\mathbf{p}(\alpha) = \mathbf{a} + (\mathbf{b}-\mathbf{a})\alpha\)
+  - $\mathbf{p}(\alpha) = \mathbf{a} + (\mathbf{b}-\mathbf{a})\alpha$
 
 ---
 
-### <code>src/ui/Overlay.h</code>
+### `src/ui/Overlay.h`
 
 Declares UI overlay:
 
-- <code>OverlayStatus</code>:
+- `OverlayStatus`:
   - reachability flags (START/GOAL)
   - runtime error text
   - phase label text
-- <code>DrawOverlayPanel(...)</code>:
+- `DrawOverlayPanel(...)`:
   - draws a panel with link properties, workspace limits, and status
   - returns updated paused state
 
 ---
 
-### <code>src/ui/Overlay.cpp</code>
+### `src/ui/Overlay.cpp`
 
 Implements the overlay rendering:
 
@@ -394,22 +418,22 @@ Implements the overlay rendering:
 
 ---
 
-### <code>src/render/DrawUtils.h</code>
+### `src/render/DrawUtils.h`
 
 Declares rendering helpers:
 
 - text helpers:
-  - <code>DrawTextBold()</code>
-  - <code>DrawTextSmall()</code>
+  - `DrawTextBold()`
+  - `DrawTextSmall()`
 - robot visuals:
-  - <code>DrawRobotBasePedestal()</code>
-  - <code>DrawRobotJointHousing()</code>
-  - <code>DrawTaperedLink()</code>
-  - <code>DrawSuctionTool()</code>
+  - `DrawRobotBasePedestal()`
+  - `DrawRobotJointHousing()`
+  - `DrawTaperedLink()`
+  - `DrawSuctionTool()`
 
 ---
 
-### <code>src/render/DrawUtils.cpp</code>
+### `src/render/DrawUtils.cpp`
 
 Implements rendering utilities using raylib primitives:
 
@@ -421,6 +445,18 @@ Implements rendering utilities using raylib primitives:
 
 ---
 
+<a id="simulation-video"></a>
+
+## Simulation video
+
+Below is a clickable thumbnail that links to the simulation video on YouTube.
+
+> Replace `YOUR_VIDEO_ID` with your real YouTube video ID.
+
+[![Manipulator3D Simulation Video](https://i.ytimg.com/vi/YOUR_VIDEO_ID/maxresdefault.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
+
+---
+
 <a id="troubleshooting"></a>
 
 ## Troubleshooting
@@ -428,24 +464,23 @@ Implements rendering utilities using raylib primitives:
 ### CMake can’t build raylib (or build fails early)
 
 - Make sure you have a working C/C++ toolchain installed (MSVC Build Tools / Xcode CLT / GCC).
-- Delete the <code>build/</code> folder and reconfigure:
-  <pre><code>rm -rf build
-mkdir build &amp;&amp; cd build
-cmake ..
-</code></pre>
+- Delete the `build/` folder and reconfigure:
+  ```bash
+  rm -rf build
+  mkdir build && cd build
+  cmake ..
+  ```
 
-### The executable path is different than <code>./Release/Manipulator3D.exe</code>
+### The executable path is different than `./Release/Manipulator3D.exe`
 
 - That path is typical for Visual Studio multi-config builds.
-- Try running from <code>build/</code>:
-  - Windows: <code>.\Manipulator3D.exe</code> or <code>.\Release\Manipulator3D.exe</code>
-  - Linux/macOS: <code>./Manipulator3D</code>
+- Try running from `build/`:
+  - Windows: `.\Manipulator3D.exe` or `.\Release\Manipulator3D.exe`
+  - Linux/macOS: `./Manipulator3D`
 
 ### Start/Goal is “out of reach”
 
 - Ensure:
-  - <code>z &gt;= 0</code>
-  - <code>|p|</code> is within the workspace shell:
-    - <code>[|L1 - L2|, L1 + L2]</code>
-
----
+  - `z >= 0`
+  - `|p|` is within the workspace shell:
+    - `[|L1 - L2|, L1 + L2]`
