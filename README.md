@@ -93,10 +93,6 @@ Manipulator3D/
 
 ## Robotics: kinematics, dynamics, and inverse kinematics
 
-> Note on README math rendering (GitHub):
-> This README uses GitHub-supported math blocks via fenced ```math code blocks and inline `$...$`.
-> If your viewer does not support math, the equations will appear as plain text.
-
 ### 1) Coordinate frames and joint conventions
 
 - World frame origin is at the center of the base revolute joint: **(0,0,0)**.
