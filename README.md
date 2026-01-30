@@ -449,11 +449,15 @@ Implements rendering utilities using raylib primitives:
 
 ## Simulation video
 
-Below is a clickable thumbnail that links to the simulation video on YouTube.
+Below is a link to the simulation video on YouTube.
 
-> Replace `YOUR_VIDEO_ID` with your real YouTube video ID.
-
-[![Manipulator3D Simulation Video](https://i.ytimg.com/vi/YOUR_VIDEO_ID/maxresdefault.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
+<a href="" target="_blank">
+  <img
+    src="https://i.ytimg.com/vi/myvideolink/maxresdefault.jpg"
+    alt="Assembly Programming Language Tutorial"
+    style="max-width: 100%; border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.18); margin-top: 0.5rem;"
+  />
+</a>
 
 ---
 
